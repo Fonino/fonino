@@ -14,12 +14,13 @@
     "apps/cli"
   ],
   "bin": {
+    "fonino": "apps/cli/bin/fonino",
     "agentphone": "apps/cli/bin/agentphone"
   },
   "scripts": {
     "build:native": "cd native/agentphone-macos && swift build -c release",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "agentphone": "node apps/cli/src/main.ts",
+    "fonino": "node apps/cli/src/main.ts",
     "mcp": "node packages/mcp-server/src/main.ts",
     "test": "node --test 'tests/**/*.test.ts'"
   },

@@ -1,6 +1,6 @@
 // A repaired recipe that touches a login or a risky step waits for the owner's review. The review
 // is an ordinary approval request, so the owner answers it where they answer everything else
-// (portal, Mac dashboard, `agentphone approve`). Decisions are applied to the recipe store lazily.
+// (portal, Mac dashboard, `fonino approve`). Decisions are applied to the recipe store lazily.
 import type { Recipe, RecipeStore } from "@agentphone/browser";
 import { BROWSER_DEVICE_ID } from "@agentphone/browser";
 import type { ApprovalQueue, ApprovalRecord } from "./approval-queue.ts";

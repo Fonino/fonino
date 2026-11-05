@@ -27,50 +27,50 @@ import { DeviceError, type SpecialKey } from "@agentphone/shared";
 import { runDoctor } from "./doctor.ts";
 import { writeReplay } from "./replay.ts";
 
-const USAGE = `agentphone — let an AI agent operate a real iPhone
+const USAGE = `fonino — let an AI agent operate a real iPhone
 
 Usage:
-  agentphone devices                          list phones
-  agentphone status <device>                  device + setup status
-  agentphone screen <device> [--out f.png] [--open]
-  agentphone tap <device> <x> <y>
-  agentphone swipe <device> <x1> <y1> <x2> <y2> [--duration ms]
-  agentphone type <device> "text" [--submit]
-  agentphone key <device> <return|delete|escape|tab|space|up|down|left|right>
-  agentphone home <device>
-  agentphone app-switcher <device>
-  agentphone agent <device> [--goal "..."] [--max-steps 40] [--model id] [--yes-to-all-risky]
-  agentphone runs [--limit 20]                recent agent runs + metrics
-  agentphone replay <run-id|dir> [--open]     build an HTML replay of a run
-  agentphone doctor [--input]                 diagnose setup (--input also tests tapping)
-  agentphone wda up [udid…]                   keep WebDriverAgent running on USB phones (watchdog)
-  agentphone mcp                              run the MCP server on stdio (local, trusted clients)
-  agentphone mcp-http [--port 3001] [--show-token] [--rotate-token]
+  fonino devices                          list phones
+  fonino status <device>                  device + setup status
+  fonino screen <device> [--out f.png] [--open]
+  fonino tap <device> <x> <y>
+  fonino swipe <device> <x1> <y1> <x2> <y2> [--duration ms]
+  fonino type <device> "text" [--submit]
+  fonino key <device> <return|delete|escape|tab|space|up|down|left|right>
+  fonino home <device>
+  fonino app-switcher <device>
+  fonino agent <device> [--goal "..."] [--max-steps 40] [--model id] [--yes-to-all-risky]
+  fonino runs [--limit 20]                recent agent runs + metrics
+  fonino replay <run-id|dir> [--open]     build an HTML replay of a run
+  fonino doctor [--input]                 diagnose setup (--input also tests tapping)
+  fonino wda up [udid…]                   keep WebDriverAgent running on USB phones (watchdog)
+  fonino mcp                              run the MCP server on stdio (local, trusted clients)
+  fonino mcp-http [--port 3001] [--show-token] [--rotate-token]
                                               authenticated Streamable HTTP MCP for cloud agents (Grok Bot)
-  agentphone approvals | approve <id> [--for-task] | deny <id>   owner decisions for agents' risky actions
-  agentphone keys create <name> [--devices iphone-001,iphone-002] [--no-approval] [--allow +1628…,a@b.com]
-  agentphone keys allow <id|name> <+1628…,a@b.com | anyone>   who a key may text
-  agentphone keys devices <id|name> <iphone-002,browser-001 | *>   which phones / the browser a key may use
-  agentphone keys signin <id|name>            new sign-in code (for "Connect" in Muse/Grok/Claude via OAuth)
-  agentphone keys list | keys revoke <id|name>      customer API keys for the hosted service
-  agentphone usage [--month 2026-09] [--csv]  usage per customer (calls, texts, phone minutes); --csv for billing
-  agentphone dashboard [--port 3001]          open the owner dashboard (needs mcp-http running)
-  agentphone service install [--tunnel] | uninstall | restart [name] | status | logs [name]
+  fonino approvals | approve <id> [--for-task] | deny <id>   owner decisions for agents' risky actions
+  fonino keys create <name> [--devices iphone-001,iphone-002] [--no-approval] [--allow +1628…,a@b.com]
+  fonino keys allow <id|name> <+1628…,a@b.com | anyone>   who a key may text
+  fonino keys devices <id|name> <iphone-002,browser-001 | *>   which phones / the browser a key may use
+  fonino keys signin <id|name>            new sign-in code (for "Connect" in Muse/Grok/Claude via OAuth)
+  fonino keys list | keys revoke <id|name>      customer API keys for the hosted service
+  fonino usage [--month 2026-09] [--csv]  usage per customer (calls, texts, phone minutes); --csv for billing
+  fonino dashboard [--port 3001]          open the owner dashboard (needs mcp-http running)
+  fonino service install [--tunnel] | uninstall | restart [name] | status | logs [name]
                                               run wda + mcp-http + tunnel as login services that auto-restart
-  agentphone setup                            guided setup in your browser (Fonino for Mac / BYOF)
-  agentphone setup status|signin|helper|settings-done|live [--json]   the same, step by step (for AI agents)
-  agentphone relay connect <host-token> [--url wss://api.fonino.app/host] | relay status | relay disconnect
+  fonino setup                            guided setup in your browser (Fonino for Mac / BYOF)
+  fonino setup status|signin|helper|settings-done|live [--json]   the same, step by step (for AI agents)
+  fonino relay connect <host-token> [--url wss://api.fonino.app/host] | relay status | relay disconnect
                                               serve your phones through the Fonino cloud (no tunnel needed)
-  agentphone lease list | lease release <device>    exclusive phone leases
-  agentphone vault add <site> [username|password] | vault list | vault remove <site> [kind]
+  fonino lease list | lease release <device>    exclusive phone leases
+  fonino vault add <site> [username|password] | vault list | vault remove <site> [kind]
                                               website logins for the agent browser (macOS Keychain)
-  agentphone recipes list | show <id> | review | approve <id> | reject <id> | delete <id>
-  agentphone recipes export <id> | import <file> --task "…" | run <id> [--param name=value …]
+  fonino recipes list | show <id> | review | approve <id> | reject <id> | delete <id>
+  fonino recipes export <id> | import <file> --task "…" | run <id> [--param name=value …]
                                               browser recipes: tasks an agent did once, replayed without AI
-  agentphone browser open <url>               check the agent browser and print what an agent sees
-  agentphone serve [--port 7333]              local HTTP bridge for the web UI
+  fonino browser open <url>               check the agent browser and print what an agent sees
+  fonino serve [--port 7333]              local HTTP bridge for the web UI
 
-Coordinates are screenshot pixels of \`agentphone screen\` (origin top-left).
+Coordinates are screenshot pixels of \`fonino screen\` (origin top-left).
 Env: ANTHROPIC_API_KEY, AGENTPHONE_MODEL, AGENTPHONE_EFFORT, AGENTPHONE_MOCK=1,
      AGENTPHONE_ADAPTERS=mirroring,wda  AGENTPHONE_RESTORE_FOCUS=0
      AGENTPHONE_BROWSER=0 (no browser tools)  AGENTPHONE_BROWSER_ENGINE=chrome|lightpanda  AGENTPHONE_CHROME`;
@@ -135,7 +135,7 @@ const yellow = (s: string) => `\x1b[33m${s}\x1b[0m`;
 const dim = (s: string) => `\x1b[2m${s}\x1b[0m`;
 
 function need(n: number, what: string) {
-  if (args.length < n) throw new DeviceError("bad_args", `usage: agentphone ${cmd} ${what}`);
+  if (args.length < n) throw new DeviceError("bad_args", `usage: fonino ${cmd} ${what}`);
 }
 function nums(from: number, count: number): number[] {
   return args.slice(from, from + count).map((v, i) => {
@@ -145,7 +145,7 @@ function nums(from: number, count: number): number[] {
   });
 }
 async function device(): Promise<PhoneDevice> {
-  if (!args[0]) throw new DeviceError("bad_args", `usage: agentphone ${cmd} <device> ...  (see \`agentphone devices\`)`);
+  if (!args[0]) throw new DeviceError("bad_args", `usage: fonino ${cmd} <device> ...  (see \`fonino devices\`)`);
   return registry.getDevice(args[0]);
 }
 function ok(msg: string) {
@@ -175,7 +175,7 @@ async function main() {
     case "devices": {
       const list = await registry.listDevices();
       if (flags.json) return console.log(JSON.stringify(list, null, 2));
-      if (!list.length) return console.log("No devices. Run `agentphone doctor`.");
+      if (!list.length) return console.log("No devices. Run `fonino doctor`.");
       const rows = [["ID", "NAME", "STATUS", "ADAPTER", "DETAIL"], ...list.map((d) => [d.id, d.name, d.status, d.adapter, d.detail ?? ""])];
       const w = rows[0].map((_, c) => Math.max(...rows.map((r) => r[c].length)));
       for (const [i, r] of rows.entries()) {
@@ -292,7 +292,7 @@ async function main() {
         await svc.restart(["wda"]).catch(() => undefined);
         return ok(`renewed the helper for ${udids.length} iPhone(s)`);
       }
-      if (args[0] !== "up") throw new DeviceError("bad_args", "usage: agentphone wda up [udid…] | wda resign");
+      if (args[0] !== "up") throw new DeviceError("bad_args", "usage: fonino wda up [udid…] | wda resign");
       const { WdaSupervisor } = await import("@agentphone/iphone-adapter");
       const sup = new WdaSupervisor({ udids: args.slice(1) });
       const color = { healthy: green, starting: yellow, down: red, needs_human: red, untrusted: red } as const;
@@ -390,8 +390,8 @@ async function main() {
       console.log(dim(`Auth: header "Authorization: Bearer <token>" — token in ${tokenPath}${flags["show-token"] ? "" : " (--show-token to print)"}`));
       if (flags["show-token"]) console.log(`Token: ${token}`);
       console.log(dim("Expose it with an HTTPS tunnel: scripts/tunnel.sh (keep this Mac awake, on power, phones plugged in)."));
-      console.log(dim(`Customer keys: ${keys.list().filter((k) => !k.revokedAt).length} active (agentphone keys list).`));
-      console.log(dim(`Dashboard (this Mac only): http://127.0.0.1:${port}/admin/ — approve texts there or with \`agentphone approve|deny <id>\`.`));
+      console.log(dim(`Customer keys: ${keys.list().filter((k) => !k.revokedAt).length} active (fonino keys list).`));
+      console.log(dim(`Dashboard (this Mac only): http://127.0.0.1:${port}/admin/ — approve texts there or with \`fonino approve|deny <id>\`.`));
       for (const sig of ["SIGINT", "SIGTERM"] as const) {
         process.on(sig, () => {
           core.releaseAll();
@@ -407,7 +407,7 @@ async function main() {
       const { ApprovalQueue } = await import("@agentphone/mcp-server");
       const q = new ApprovalQueue();
       if (cmd === "approvals" && args[0] === "rules") {
-        // agentphone approvals rules [remove <id>]: the owner's "Always allow" rules
+        // fonino approvals rules [remove <id>]: the owner's "Always allow" rules
         if (args[1] === "remove") {
           need(3, "rules remove <rule-id>");
           if (!q.removeRule(args[2])) throw new DeviceError("not_found", `No rule ${args[2]}`);
@@ -470,7 +470,7 @@ async function main() {
         return ok(`revoked ${store.revoke(args[1]).name}`);
       }
       const all = store.list();
-      if (!all.length) return console.log("No API keys. Create one: agentphone keys create <customer-name>");
+      if (!all.length) return console.log("No API keys. Create one: fonino keys create <customer-name>");
       for (const k of all) {
         const phones = k.devices === "*" ? "all phones" : k.devices.join(", ");
         const who = k.allowRecipients ? `texts only ${k.allowRecipients.join(", ")}` : "texts anyone";
@@ -533,7 +533,7 @@ async function main() {
         await new Promise((r) => child.on("exit", r));
         return;
       }
-      if (sub !== "status") throw new DeviceError("bad_args", "usage: agentphone service install|uninstall|restart|status|logs");
+      if (sub !== "status") throw new DeviceError("bad_args", "usage: fonino service install|uninstall|restart|status|logs");
       const all = await svc.status();
       if (flags.json) return console.log(JSON.stringify({ services: all, publicUrl: svc.publicUrl() }, null, 2));
       for (const s of all) {
@@ -565,15 +565,15 @@ async function main() {
         const url = typeof flags.url === "string" ? flags.url : "wss://api.fonino.app/host";
         mkdirSync(dirname(path), { recursive: true });
         writeFileSync(path, JSON.stringify({ url, hostToken: args[1] }, null, 2), { mode: 0o600 });
-        ok(`saved; restart the phone service to connect: agentphone service restart mcp`);
+        ok(`saved; restart the phone service to connect: fonino service restart mcp`);
         return;
       }
       if (args[0] === "disconnect") {
         if (existsSync(path)) writeFileSync(path, "{}", { mode: 0o600 });
-        return ok("relay disabled; restart the phone service: agentphone service restart mcp");
+        return ok("relay disabled; restart the phone service: fonino service restart mcp");
       }
       const cfg = readRelayConfig();
-      console.log(cfg ? `relay: ${cfg.url} (host ${cfg.hostToken.slice(4, 15)})` : "relay: not configured (agentphone relay connect <host-token>)");
+      console.log(cfg ? `relay: ${cfg.url} (host ${cfg.hostToken.slice(4, 15)})` : "relay: not configured (fonino relay connect <host-token>)");
       return;
     }
 
@@ -581,9 +581,9 @@ async function main() {
       const { adminLoginToken, readToken } = await import("@agentphone/mcp-server");
       const base = `http://127.0.0.1:${Number(flags.port ?? 3001)}`;
       const up = await fetch(`${base}/admin/`).then(() => true).catch(() => false);
-      if (!up) throw new DeviceError("not_running", `Nothing answering at ${base}`, "Start it first: agentphone service install (or agentphone mcp-http)");
+      if (!up) throw new DeviceError("not_running", `Nothing answering at ${base}`, "Start it first: fonino service install (or fonino mcp-http)");
       const token = readToken(join(process.env.AGENTPHONE_HOME ?? join(homedir(), ".agentphone"), "mcp-token"));
-      if (!token) throw new DeviceError("not_configured", "No owner token yet", "Start agentphone mcp-http once to create it.");
+      if (!token) throw new DeviceError("not_configured", "No owner token yet", "Start fonino mcp-http once to create it.");
       spawn("open", [`${base}/admin/login?t=${adminLoginToken(token)}`], { stdio: "ignore", detached: true }).unref();
       return ok(`opened the dashboard (${base}/admin/); the login link works once, within 60 s`);
     }
@@ -630,7 +630,7 @@ async function main() {
 // ---------------- agent ----------------
 
 /**
- * Line reader that buffers input, so piped answers (`printf 'y\n' | agentphone agent ...`)
+ * Line reader that buffers input, so piped answers (`printf 'y\n' | fonino agent ...`)
  * aren't lost before the question is asked. Resolves null once stdin is closed.
  */
 function lineReader(rl: Interface) {
@@ -711,7 +711,7 @@ function printResult(r: RunResult) {
         `${m.humanInterventions} approvals · ${m.deviceErrors} device errors`,
     ),
   );
-  console.log(dim(`  replay: agentphone replay ${r.runId} --open`));
+  console.log(dim(`  replay: fonino replay ${r.runId} --open`));
 }
 
 async function agentCommand() {

@@ -250,7 +250,7 @@ export class DeviceRegistry {
       }
     }
     const known = (await this.listDevices()).map((d) => d.id).join(", ") || "none";
-    throw new DeviceError("unknown_device", `No device with id "${id}". Known devices: ${known}`, "Run `agentphone devices`.");
+    throw new DeviceError("unknown_device", `No device with id "${id}". Known devices: ${known}`, "Run `fonino devices`.");
   }
 }
 

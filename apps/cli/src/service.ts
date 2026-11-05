@@ -1,8 +1,8 @@
-// `agentphone service install|uninstall|status|restart|logs`: run the host as macOS
+// `fonino service install|uninstall|status|restart|logs`: run the host as macOS
 // LaunchAgents so it starts at login and restarts itself if anything crashes.
 //
-//   dev.agentphone.wda     agentphone wda up      (keeps WebDriverAgent alive on every phone)
-//   dev.agentphone.mcp     agentphone mcp-http    (the API + /admin dashboard)
+//   dev.agentphone.wda     fonino wda up      (keeps WebDriverAgent alive on every phone)
+//   dev.agentphone.mcp     fonino mcp-http    (the API + /admin dashboard)
 //   dev.agentphone.tunnel  scripts/tunnel.sh      (public HTTPS URL → ~/.agentphone/public-url)
 //
 // LaunchAgents (not daemons): WDA needs the logged-in user's session, Xcode and keychain.
@@ -106,7 +106,7 @@ export async function uninstall(which: ServiceName[]) {
 export async function restart(which: ServiceName[]) {
   for (const s of which) {
     const r = await launchctl("kickstart", "-k", `gui/${uid}/${label(s)}`);
-    if (!r.ok) throw new Error(`${label(s)} is not installed (agentphone service install)`);
+    if (!r.ok) throw new Error(`${label(s)} is not installed (fonino service install)`);
   }
 }
 

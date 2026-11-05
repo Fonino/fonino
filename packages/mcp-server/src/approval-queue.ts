@@ -1,7 +1,7 @@
 // Approval channel for remote agents (e.g. Grok Bot). A consequential request is written to
 // ~/.agentphone/approvals/<id>.json; the agent gets a link to show its user and retries once the
 // owner decides: in the Fonino account (app.fonino.app/approve/…), the Mac dashboard or the CLI
-// (`agentphone approve|deny <id>`). No MCP tool can approve anything, so a model never approves itself.
+// (`fonino approve|deny <id>`). No MCP tool can approve anything, so a model never approves itself.
 
 import { randomInt, randomUUID, timingSafeEqual } from "node:crypto";
 import { mkdirSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
@@ -26,7 +26,7 @@ export type ApprovalRecord = {
   /** The agent's retry has used this decision (an approval covers one action). */
   used?: boolean;
   /**
-   * One-time code shown ONLY to the owner (Mac notification, `agentphone approvals`, dashboard).
+   * One-time code shown ONLY to the owner (Mac notification, `fonino approvals`, dashboard).
    * The owner can approve by telling it to their agent in chat; the agent never sees it otherwise.
    */
   code?: string;

@@ -408,7 +408,7 @@ export class RemoteAgentPhone {
       throw new DeviceError(
         "app_blocked",
         `Not allowed: ${denied}. Nothing was done.`,
-        app === "com.apple.MobileSMS" ? "Use phone_send_message / phone_read_messages; call phone_home to leave Messages." : "Call phone_home and use an allowed app.",
+        app === "com.apple.MobileSMS" || app === "com.google.android.apps.messaging" || app === "com.samsung.android.messaging" ? "Use phone_send_message / phone_read_messages; call phone_home to leave Messages." : "Call phone_home and use an allowed app.",
       );
     }
   }
@@ -616,7 +616,7 @@ export class RemoteAgentPhone {
       req = this.approvals.create({ deviceId: ctx.device.id, leaseId: ctx.lease.leaseId, holder: ctx.lease.holder, principal: ctx.principal, risk, spec, screenshotPath: ctx.screenshotPath ?? ctx.lastScreen?.state.screenshotPath });
       // The one-time code goes only to the owner; they can say it to their agent in chat to approve.
       this.notifyOwner(`Fonino: approve ${spec.operation.replace(/_/g, " ")}? Code ${req.code}`, `${ctx.lease.holder}: ${oneLine(spec.summary)}`);
-      this.log(`\n⚠ APPROVAL NEEDED (${ctx.lease.holder} on ${ctx.device.id}, ${risk}):\n${describeSpec(spec)}\n  approval code: ${req.code}  → agentphone approve ${req.id}   |   agentphone deny ${req.id}\n`);
+      this.log(`\n⚠ APPROVAL NEEDED (${ctx.lease.holder} on ${ctx.device.id}, ${risk}):\n${describeSpec(spec)}\n  approval code: ${req.code}  → fonino approve ${req.id}   |   fonino deny ${req.id}\n`);
       ctx.recorder.event({ kind: "approval", id: req.id, risk, spec, status: "pending" });
     }
     const { url, anywhere } = this.approvalLink(ctx.baseUrl, req.id);
@@ -625,7 +625,7 @@ export class RemoteAgentPhone {
     const what = `${spec.operation.replace(/_/g, " ")} in ${spec.app}`;
     const show = anywhere
       ? "Show the user approve_url as a link right now (for example: [Approve: " + what + "](" + url + ")); it opens in any browser after they sign in to Fonino, where they can allow just this step or the rest of this task. Say what it will do."
-      : "Tell the user it needs their approval on the Mac that runs Fonino: approve_url opens only there (the Fonino dashboard), or they can run `agentphone approve " + req.id + "` on that Mac. Don't present it as a link to open elsewhere. Say what it will do.";
+      : "Tell the user it needs their approval on the Mac that runs Fonino: approve_url opens only there (the Fonino dashboard), or they can run `fonino approve " + req.id + "` on that Mac. Don't present it as a link to open elsewhere. Say what it will do.";
     throw new DeviceError(
       "approval_pending",
       awaitTool === "phone_await_approval" ? "This needs the phone owner's approval. Nothing was done yet." : "This needs the owner's approval. Nothing was done yet.",
@@ -783,7 +783,7 @@ export class RemoteAgentPhone {
         meta.screen_changed_pct = pct;
         if (pct < 0.4) {
           meta.warning =
-            tool === "home" && before.state.foregroundApp === "com.apple.springboard"
+            tool === "home" && before.state.foregroundApp === "com.apple.springboard" && ctx.device.adapter.startsWith("iphone")
               ? "Already on the Home Screen: Home can't change Home Screen pages here (XCUITest limitation). Swipe right to go back a page."
               : "The screen did not visibly change. Check whether the action had any effect before continuing.";
         }
@@ -843,7 +843,7 @@ export class RemoteAgentPhone {
         try {
           this.authorize(principal, args ?? {});
           if (isBrowserTool && !canUseDevice(principal, BROWSER_DEVICE_ID)) {
-            throw new DeviceError("forbidden_device", `This API key can't use the browser (${BROWSER_DEVICE_ID}).`, `Ask the owner to allow it for this assistant (agentphone keys devices <key> <its devices>,${BROWSER_DEVICE_ID}).`);
+            throw new DeviceError("forbidden_device", `This API key can't use the browser (${BROWSER_DEVICE_ID}).`, `Ask the owner to allow it for this assistant (fonino keys devices <key> <its devices>,${BROWSER_DEVICE_ID}).`);
           }
           result = await (hasSchema ? handler(args, x) : handler(x));
         } catch (e) {
@@ -1225,10 +1225,10 @@ export class RemoteAgentPhone {
       "phone_open_app",
       {
         description:
-          "Open an app by bundle id. fresh=true quits it first so it starts from its launch screen (apps otherwise resume where they were; some, like Calculator, may still show old values — clear them). Common ids: com.apple.Preferences (Settings), com.apple.mobilesafari, com.apple.calculator, com.apple.mobiletimer (Clock), com.apple.mobilenotes, com.apple.weather, com.apple.MobileSMS (Messages).",
+          "Open an app by bundle id (iPhone) or package name (Android). fresh=true quits it first so it starts from its launch screen (apps otherwise resume where they were; some, like Calculator, may still show old values — clear them). Common iPhone ids: com.apple.Preferences (Settings), com.apple.mobilesafari, com.apple.calculator, com.apple.mobiletimer (Clock), com.apple.mobilenotes, com.apple.weather, com.apple.MobileSMS (Messages). Android: com.android.chrome, com.google.android.calculator, com.google.android.deskclock, com.google.android.keep, com.google.android.apps.maps.",
         inputSchema: {
           ...common,
-          bundle_id: z.string().regex(/^[A-Za-z0-9-]+(\.[A-Za-z0-9-]+)+$/, "a bundle id like com.apple.calculator"),
+          bundle_id: z.string().regex(/^[A-Za-z0-9_-]+(\.[A-Za-z0-9_-]+)+$/, "a bundle id like com.apple.calculator, or an Android package like com.android.chrome"),
           fresh: z.boolean().optional(),
         },
       },

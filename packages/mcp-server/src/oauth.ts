@@ -4,7 +4,7 @@
 // authorization code + PKCE S256 only, rotating refresh tokens with reuse detection.
 //
 // Users are the existing customer keys: on the consent page a customer types the short
-// sign-in code we gave them (`agentphone keys create` prints it). The token then carries
+// sign-in code we gave them (`fonino keys create` prints it). The token then carries
 // exactly that key's scope: phones, approval policy, allowlist. Revoking the key kills
 // its tokens immediately (checked on every request).
 //

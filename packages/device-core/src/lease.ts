@@ -130,6 +130,6 @@ export function leasedError(l: Lease): DeviceError {
   return new DeviceError(
     "device_leased",
     `${l.deviceId} is in use by ${l.holder} for "${l.task}" until ${l.expiresAt}.`,
-    "Wait for it to be released, use a different phone, or (as the owner) run `agentphone lease release <device>`.",
+    "Wait for it to be released, use a different phone, or (as the owner) run `fonino lease release <device>`.",
   );
 }

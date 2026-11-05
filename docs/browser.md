@@ -28,20 +28,20 @@ risk, import checks) and `packages/mcp-server/src/browser-tools.ts` (the MCP too
 | `browser_list_recipes` / `browser_run_recipe {recipe_id, params}` | Find / replay recipes |
 | `browser_await_approval` / `browser_close` | Wait for the owner / end the session |
 
-Customer keys need `browser-001` in their devices (`agentphone keys create <name> --devices browser-001`);
+Customer keys need `browser-001` in their devices (`fonino keys create <name> --devices browser-001`);
 keys created by the cloud relay (`devices: "*"`) already have it. Usage is logged as device `browser-001`.
 
 ## Safety model
 
 The browser enforces these itself; the agent can't talk its way past them:
 
-* **Secrets** live in the macOS Keychain (`agentphone vault add <site>`), one item per exact
+* **Secrets** live in the macOS Keychain (`fonino vault add <site>`), one item per exact
   origin. They are filled only on that origin, only into a field the browser itself recognises as
   that kind (a password box), never typed by the agent, and redacted from every output, log and
   recording. No MCP tool can read, list or write the vault.
 * **Approvals**: risky clicks (buttons that buy/pay/order/send/delete, the last click of a recipe,
   steps the agent or a review flagged) go through the same owner-approval queue as the phones
-  (portal, Mac dashboard, `agentphone approve`). The approval is built by the browser from the
+  (portal, Mac dashboard, `fonino approve`). The approval is built by the browser from the
   page (button, amounts, items, filled-in fields), so a changed total needs a new approval.
   The agent can add risk (`risk:` on a click, `risky_steps` on save) but never remove it.
 * **Network**: only public http(s) sites. Local addresses (this Mac's `/admin` and `/mcp`, the
@@ -64,11 +64,11 @@ keep the recorded value; a replaced risky step keeps its approval. The repaired 
 ## Owner commands
 
 ```
-agentphone vault add <site> [username|password]   # hidden prompt; stored in the Keychain
-agentphone vault list | vault remove <site>
-agentphone recipes list | show <id> | review | approve <id> | reject <id> | delete <id>
-agentphone recipes export <id> | import <file> --task "what it should do" | run <id> --param k=v
-agentphone browser open <url>                     # check the browser; print what an agent sees
+fonino vault add <site> [username|password]   # hidden prompt; stored in the Keychain
+fonino vault list | vault remove <site>
+fonino recipes list | show <id> | review | approve <id> | reject <id> | delete <id>
+fonino recipes export <id> | import <file> --task "what it should do" | run <id> --param k=v
+fonino browser open <url>                     # check the browser; print what an agent sees
 ```
 
 Imported recipes always start as `needs_review` (stored risk labels are ignored and re-derived;

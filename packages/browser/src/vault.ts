@@ -36,7 +36,7 @@ export function assertKind(kind: string): SecretKind {
 }
 
 const missing = (origin: string, kind: string) =>
-  new DeviceError("vault_missing", `No saved ${kind} for ${origin}.`, `Ask the owner to run: agentphone vault add ${origin} ${kind}`);
+  new DeviceError("vault_missing", `No saved ${kind} for ${origin}.`, `Ask the owner to run: fonino vault add ${origin} ${kind}`);
 
 const home = () => process.env.AGENTPHONE_HOME ?? join(homedir(), ".agentphone");
 

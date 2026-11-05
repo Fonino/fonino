@@ -1,4 +1,4 @@
-// `agentphone doctor`: diagnose the setup, with an actionable fix for every failure.
+// `fonino doctor`: diagnose the setup, with an actionable fix for every failure.
 
 import { execFileSync } from "node:child_process";
 import { existsSync, statSync } from "node:fs";
@@ -54,7 +54,7 @@ export async function runDoctor(registry: DeviceRegistry, opts: { input: boolean
 
   add({
     ok: process.env.ANTHROPIC_API_KEY || process.env.ANTHROPIC_AUTH_TOKEN ? true : "warn",
-    name: "model credentials (for `agentphone agent`)",
+    name: "model credentials (for `fonino agent`)",
     detail: process.env.ANTHROPIC_API_KEY ? "ANTHROPIC_API_KEY set" : "ANTHROPIC_API_KEY not set",
     fix: "export ANTHROPIC_API_KEY=sk-ant-...",
   });
@@ -115,7 +115,7 @@ export async function runDoctor(registry: DeviceRegistry, opts: { input: boolean
         fix: "Input events didn't change the screen. Check Accessibility permission, and that no other window covers iPhone Mirroring.",
       });
     } else {
-      add({ ok: "skip", name: "input working", detail: "run `agentphone doctor --input` (presses Home and opens Spotlight on the phone)" });
+      add({ ok: "skip", name: "input working", detail: "run `fonino doctor --input` (presses Home and opens Spotlight on the phone)" });
     }
   }
 

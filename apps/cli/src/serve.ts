@@ -1,4 +1,4 @@
-// `agentphone serve`: a localhost HTTP bridge so a browser UI (apps/web) can watch
+// `fonino serve`: a localhost HTTP bridge so a browser UI (apps/web) can watch
 // and drive phones. The Mac runtime stays in control of the devices; the web app
 // only ever talks to this bridge. Binds to 127.0.0.1 only.
 //

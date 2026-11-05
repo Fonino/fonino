@@ -19,7 +19,7 @@ import type { RemoteAgentPhone } from "./remote.ts";
 
 type AdminDeps = { core: RemoteAgentPhone; approvals: ApprovalQueue; keys?: KeyStore; registry: DeviceRegistry; ownerToken: string };
 
-// Login: `agentphone dashboard` (which can read the owner token) opens /admin/login?t=<ts>.<hmac>.
+// Login: `fonino dashboard` (which can read the owner token) opens /admin/login?t=<ts>.<hmac>.
 // Valid 60 s, single use; it becomes a 12-hour HttpOnly cookie. Other local programs and users
 // can reach the port but not approve texts or open live views without the token.
 const sessions = new Map<string, number>(); // session id → expiry
@@ -69,7 +69,7 @@ export async function handleAdmin(req: http.IncomingMessage, res: http.ServerRes
   const path = url.pathname;
   if (req.method === "GET" && path === "/admin/login") {
     if (!loginValid(d.ownerToken, url.searchParams.get("t") ?? "")) {
-      res.writeHead(403, { "content-type": "text/plain" }).end("Login link invalid or expired. Run `agentphone dashboard` again.");
+      res.writeHead(403, { "content-type": "text/plain" }).end("Login link invalid or expired. Run `fonino dashboard` again.");
       return;
     }
     const sid = randomBytes(32).toString("base64url");
@@ -79,7 +79,7 @@ export async function handleAdmin(req: http.IncomingMessage, res: http.ServerRes
     return;
   }
   if (!sessionOk(req)) {
-    res.writeHead(401, { "content-type": "text/plain" }).end("Open the dashboard with `agentphone dashboard`.");
+    res.writeHead(401, { "content-type": "text/plain" }).end("Open the dashboard with `fonino dashboard`.");
     return;
   }
   if (req.method === "GET" && (path === "/admin" || path === "/admin/")) {

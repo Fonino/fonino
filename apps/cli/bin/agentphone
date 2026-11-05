@@ -1,4 +1,1 @@
-#!/bin/sh
-# Resolve symlinks (npm link / ~/bin) to find the repo.
-SELF="$0"; while [ -L "$SELF" ]; do L=$(readlink "$SELF"); case "$L" in /*) SELF="$L";; *) SELF="$(dirname "$SELF")/$L";; esac; done
-exec node --disable-warning=ExperimentalWarning "$(cd "$(dirname "$SELF")/.." && pwd)/src/main.ts" "$@"
+fonino

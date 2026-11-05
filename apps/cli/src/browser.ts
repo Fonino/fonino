@@ -64,7 +64,7 @@ export async function vaultCommand(args: string[]): Promise<void> {
     return;
   }
   const all = vault.list();
-  if (!all.length) return console.log("No saved website logins. Add one: agentphone vault add <site>");
+  if (!all.length) return console.log("No saved website logins. Add one: fonino vault add <site>");
   for (const e of all) console.log(`${e.origin}  ${e.kind}`);
 }
 
@@ -100,7 +100,7 @@ export async function recipesCommand(args: string[], flags: Flags): Promise<void
       for (const r of todo) {
         console.log(yellow(reviewText(r)));
         console.log(describeRecipe(r));
-        console.log(dim(`  → agentphone recipes approve ${r.id}   |   agentphone recipes reject ${r.id}\n`));
+        console.log(dim(`  → fonino recipes approve ${r.id}   |   fonino recipes reject ${r.id}\n`));
       }
       return;
     }
@@ -132,7 +132,7 @@ export async function recipesCommand(args: string[], flags: Flags): Promise<void
       for (const u of res.unneeded) console.log(yellow(`not needed for "${flags.task}": step ${u.step}: ${u.reason}`));
       if (!ai) console.log(dim("(purpose check skipped: our AI is off; review the steps yourself, or ask your agent to review them)"));
       console.log(describeRecipe(saved));
-      return console.log(saved.status === "rejected" ? yellow("Rejected: the format is unsafe.") : `Saved as ${saved.status}. Approve with: agentphone recipes approve ${saved.id} --version ${saved.version}`);
+      return console.log(saved.status === "rejected" ? yellow("Rejected: the format is unsafe.") : `Saved as ${saved.status}. Approve with: fonino recipes approve ${saved.id} --version ${saved.version}`);
     }
     case "run": {
       if (!args[1]) throw bad("recipes run <id> [--param name=value …]");
@@ -167,7 +167,7 @@ export async function recipesCommand(args: string[], flags: Flags): Promise<void
   }
 }
 
-/** `agentphone browser open <url>`: check the browser works and print what an agent would see. */
+/** `fonino browser open <url>`: check the browser works and print what an agent would see. */
 export async function browserCommand(args: string[]): Promise<void> {
   if (args[0] !== "open" || !args[1]) throw bad("browser open <url>");
   const svc = new BrowserService({ ai: null });

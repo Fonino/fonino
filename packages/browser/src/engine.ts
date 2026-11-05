@@ -56,7 +56,7 @@ export class Engine {
     return this.kind === "lightpanda" ? 1 : 4;
   }
 
-  /** Problems that stop the engine from starting, for `agentphone doctor`. */
+  /** Problems that stop the engine from starting, for `fonino doctor`. */
   check(): string | undefined {
     if (this.kind === "chrome" && !existsSync(this.chromePath)) return `Chrome not found at ${this.chromePath} (set AGENTPHONE_CHROME)`;
     return undefined;

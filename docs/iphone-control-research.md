@@ -124,9 +124,9 @@ Mac mini ≈ 60 / ≈ 115. **Host compute is not the binding constraint.** What 
 * **Batteries** — phones on charge 24/7: use the 80% charge limit, keep them cool.
 
 Working plan: **~20–30 phones per Mac mini, several Macs on one developer account**, each Mac running
-its own local runtime + `agentphone wda up`; revisit with ≥ 3 phones of scale data.
+its own local runtime + `fonino wda up`; revisit with ≥ 3 phones of scale data.
 
-## Keeping WDA alive (`agentphone wda up`, T)
+## Keeping WDA alive (`fonino wda up`, T)
 
 Adopts already‑running WDAs, health‑checks every 5 s (`/status` + `/wda/locked`) through usbmuxd,
 relaunches dead ones with exponential backoff, and flags human‑only problems (untrusted
@@ -153,9 +153,9 @@ Killing a phone's `xcodebuild` host: detected in ~2 s; relaunch healthy in ~5 s 
 
 ```bash
 npm run build:native
-agentphone doctor --input                                 # Mirroring: presses Home, opens Spotlight
+fonino doctor --input                                 # Mirroring: presses Home, opens Spotlight
 node experiments/device-reliability.ts iphone-001 5 Clock # Mirroring reliability
-agentphone wda up                                         # USB phones: start + supervise WDA
+fonino wda up                                         # USB phones: start + supervise WDA
 node experiments/multi-device.ts iphone-002 iphone-003    # independence + concurrency
 node experiments/scale.ts 30                              # per-phone host cost
 ```

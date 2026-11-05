@@ -37,7 +37,7 @@ export class ReplayRun {
 
   constructor(session: BrowserSession, recipe: Recipe, params: Params) {
     if (recipe.status !== "approved") {
-      throw new DeviceError("recipe_not_approved", `Recipe ${recipe.id} v${recipe.version} is "${recipe.status}" and can't run until the owner reviews it.`, "Ask the owner to review it (agentphone recipes review).");
+      throw new DeviceError("recipe_not_approved", `Recipe ${recipe.id} v${recipe.version} is "${recipe.status}" and can't run until the owner reviews it.`, "Ask the owner to review it (fonino recipes review).");
     }
     const missingParams = recipe.params.filter((p) => !Object.hasOwn(params, p));
     if (missingParams.length) throw new DeviceError("missing_params", `Recipe ${recipe.id} needs values for: ${missingParams.join(", ")}.`);

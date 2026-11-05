@@ -23,7 +23,7 @@ const all = (await reg.listDevices()).filter((d) => d.adapter === "iphone-wda");
 for (const d of all.filter((x) => x.status !== "connected")) console.log(`skipping ${d.id}: ${d.detail}`);
 const ids = all.filter((d) => d.status === "connected").map((d) => d.id);
 if (!ids.length) {
-  console.error("No usable WebDriverAgent phones (connected and unlocked). Run `agentphone wda up` first.");
+  console.error("No usable WebDriverAgent phones (connected and unlocked). Run `fonino wda up` first.");
   process.exit(1);
 }
 const devices: PhoneDevice[] = [];

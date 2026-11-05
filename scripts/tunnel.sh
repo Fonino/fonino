@@ -1,7 +1,7 @@
 #!/bin/sh
 # HTTPS tunnel to the local AgentPhone MCP service, for cloud agents like Grok Bot.
 #
-#   scripts/tunnel.sh [port]        (default 3001, where `agentphone mcp-http` listens)
+#   scripts/tunnel.sh [port]        (default 3001, where `fonino mcp-http` listens)
 #
 # Uses a Cloudflare quick tunnel (no account; supports Streamable HTTP, per
 # docs.x.ai/grok/connectors/custom-mcp-tunneling). The URL is random and changes on
@@ -28,7 +28,7 @@ if ! codesign --verify --strict -R '=anchor apple generic and certificate leaf[s
 fi
 "$BIN" --version
 echo "Tunnelling https://<random>.trycloudflare.com → http://127.0.0.1:$PORT (the MCP endpoint is <url>/mcp)"
-# Record the current public URL for `agentphone service status` and the dashboard.
+# Record the current public URL for `fonino service status` and the dashboard.
 URLFILE="${AGENTPHONE_HOME:-$HOME/.agentphone}/public-url"
 mkdir -p "$(dirname "$URLFILE")"
 : > "$URLFILE"

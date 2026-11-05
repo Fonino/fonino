@@ -325,7 +325,7 @@ export function registerBrowserTools(server: McpServer, core: RemoteAgentPhone, 
                   why: "The repair touches a login or a step that needs approval, so the owner reviews the new version before it runs again. Until then the previous version runs.",
                   review_url: link.url,
                   review_where: link.anywhere ? "any browser (the owner's Fonino account)" : "only on the owner's Mac",
-                  next: link.anywhere ? "Show the user review_url as a link so the owner can approve the repaired recipe." : "Tell the user to review it on the Mac that runs Fonino (dashboard or `agentphone recipes review`).",
+                  next: link.anywhere ? "Show the user review_url as a link so the owner can approve the repaired recipe." : "Tell the user to review it on the Mac that runs Fonino (dashboard or `fonino recipes review`).",
                 };
               }
             }

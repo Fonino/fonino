@@ -8,11 +8,11 @@
 ```bash
 npm install
 npm run build:native          # builds native/agentphone-macos (Swift)
-npm link                      # optional: puts `agentphone` on your PATH (else apps/cli/bin/agentphone)
+npm link                      # optional: puts `fonino` on your PATH (else apps/cli/bin/fonino)
 cp .env.example .env          # add ANTHROPIC_API_KEY (+ ANTHROPIC_WORKSPACE_ID if your key isn't workspace-scoped)
 ```
 
-Grant the app you run `agentphone` from (Terminal, iTerm, your IDE…) **both** permissions in
+Grant the app you run `fonino` from (Terminal, iTerm, your IDE…) **both** permissions in
 System Settings → Privacy & Security, then restart that app:
 
 * **Screen Recording** — to capture the phone screen
@@ -23,7 +23,7 @@ System Settings → Privacy & Security, then restart that app:
 1. iPhone on iOS 18+, same Apple Account as the Mac, Bluetooth + Wi‑Fi on, near the Mac.
 2. Open **iPhone Mirroring** once and complete its setup.
 3. **Lock the iPhone** — mirroring only runs while the phone is locked.
-4. `agentphone doctor --input` (this presses Home and opens Spotlight on the phone).
+4. `fonino doctor --input` (this presses Home and opens Spotlight on the phone).
 
 Caveats (see research doc): one phone per Mac; input moves your real cursor, so don't use the Mac
 during runs; if the phone rings or is picked up, mirroring stops until it's locked again; apps
@@ -49,26 +49,44 @@ signing **expires after 7 days** (rerun step 4). A paid Apple Developer account 
    registers the phones with your team (a free team can't sign anything until one is registered).
    The Team ID is the `OU=` of your "Apple Development" certificate:
    `security find-certificate -c "Apple Development" -p | openssl x509 -noout -subject`.
-5. `agentphone wda up` — starts WebDriverAgent on every trusted phone and keeps it running
+5. `fonino wda up` — starts WebDriverAgent on every trusted phone and keeps it running
    (health checks every 5 s, restarts with backoff, logs in `~/.agentphone/wda/<udid>.log`).
    The first launch on each phone reports `needs_human: trust the developer certificate`: on the
    phone, Settings → General → VPN & Device Management → trust it; the supervisor retries by itself.
    (`scripts/wda.sh start <udid>` runs one phone in the foreground without supervision.)
-6. `agentphone devices` should list each phone as `connected` with its model and iOS version.
+6. `fonino devices` should list each phone as `connected` with its model and iOS version.
    `unavailable … phone is locked` means step 3 was skipped.
 7. Optional checks: `node experiments/multi-device.ts iphone-002 iphone-003` (independence +
    concurrency) and `node experiments/scale.ts 30` (latency, errors, host CPU/RAM per phone).
 
+## 2c. Android phones over adb (no app on the phone)
+
+1. Install Android platform-tools (`adb`): Android Studio, `brew install android-platform-tools`,
+   or Google's zip in `~/Library/Android/sdk/platform-tools`. Fonino also honors `ANDROID_ADB`
+   and `ANDROID_HOME`.
+2. On the phone: Settings → About phone → tap **Build number** 7 times; then Settings → System →
+   Developer options → **USB debugging** on. Plug it in and tap **Allow** on "Allow USB debugging?"
+   (tick "Always allow from this computer"). Wi-Fi debugging (`adb connect <ip>:<port>`) and
+   emulators work the same way.
+3. Settings → Display → **Screen timeout** → the longest. A locked phone is listed as
+   `unavailable … phone is locked`.
+4. `fonino devices` lists it as `android-001`. Coordinates are dp (screenshots are resampled), so
+   a screenshot pixel is a tap coordinate, as on iPhone.
+
+Limits: `type` only types plain ASCII (Android's `input` tool); `phone_send_message` handles any
+text. Texts go through Google Messages; reading history uses the phone's SMS store (RCS chats are
+read from the screen).
+
 ## 3. Use
 
 ```bash
-agentphone devices
-agentphone screen iphone-001 --open
-agentphone tap iphone-001 200 500
-agentphone agent iphone-001                 # interactive
-agentphone agent iphone-001 --goal "Open Settings and tell me the iOS version"
-agentphone runs && agentphone replay <run-id> --open
-agentphone wda up                           # USB phones: keep WebDriverAgent running
+fonino devices
+fonino screen iphone-001 --open
+fonino tap iphone-001 200 500
+fonino agent iphone-001                 # interactive
+fonino agent iphone-001 --goal "Open Settings and tell me the iOS version"
+fonino runs && fonino replay <run-id> --open
+fonino wda up                           # USB phones: keep WebDriverAgent running
 npm test                                    # unit tests (approval grants, abort on closed prompt)
 ```
 
@@ -79,7 +97,7 @@ A "yes" also covers up to 2 retries of the *same* intent (same quoted text and n
 MCP: the repo's `.mcp.json` registers the server for Claude Code; elsewhere run
 `node packages/mcp-server/src/main.ts` (stdio).
 
-Web UI: `agentphone serve` then `cd apps/web && npm install && npm run dev` → http://localhost:3000.
+Web UI: `fonino serve` then `cd apps/web && npm install && npm run dev` → http://localhost:3000.
 
 Useful env: `AGENTPHONE_MODEL` (default `claude-opus-5-5`), `AGENTPHONE_EFFORT`,
 `AGENTPHONE_MOCK=1` (two fake phones), `AGENTPHONE_ADAPTERS=mirroring,wda`,

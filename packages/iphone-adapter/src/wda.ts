@@ -4,7 +4,7 @@
 // Mac's cursor, and so supports several phones at once.
 //
 // Requirements: Xcode, a signing team, Developer Mode on the phone, and WDA
-// launched per device (`agentphone wda up`). Transport is a usbmuxd tunnel to
+// launched per device (`fonino wda up`). Transport is a usbmuxd tunnel to
 // device port 8100, or AGENTPHONE_WDA_URLS="<udid>=http://ip:8100,..." for Wi-Fi.
 //
 // Reliability rules:
@@ -83,7 +83,7 @@ class WdaClient {
       const req = http.request(sock ? { ...opts, createConnection: () => sock } : { ...opts, agent: false }, (res) =>
         (res.statusCode ?? 500) < 400 ? resolve(res) : reject(new DeviceError("stream_unavailable", `MJPEG server answered ${res.statusCode}`)),
       );
-      req.on("error", (e) => reject(new DeviceError("stream_unavailable", `Can't open the live stream: ${e.message}`, "Is WebDriverAgent running (agentphone wda up)?")));
+      req.on("error", (e) => reject(new DeviceError("stream_unavailable", `Can't open the live stream: ${e.message}`, "Is WebDriverAgent running (fonino wda up)?")));
       req.end();
     });
   }
@@ -104,7 +104,7 @@ class WdaClient {
           throw new DeviceError(
             "device_unreachable",
             `Can't reach WebDriverAgent on ${this.udid}: ${(e as Error).message}`,
-            "Is `agentphone wda up` running? Reconnect the phone if it was unplugged.",
+            "Is `fonino wda up` running? Reconnect the phone if it was unplugged.",
           );
         }
       }
@@ -582,7 +582,7 @@ class WdaIPhone implements PhoneDevice {
           name: "WebDriverAgent reachable",
           ok: wdaOk,
           detail,
-          fix: wdaOk ? undefined : `Start WDA: agentphone wda up (or scripts/wda.sh start ${this.id})`,
+          fix: wdaOk ? undefined : `Start WDA: fonino wda up (or scripts/wda.sh start ${this.id})`,
         },
         {
           name: "phone unlocked",
@@ -688,7 +688,7 @@ export class IPhoneWdaAdapter implements DeviceAdapter {
     if (existing) return existing;
     const url = wdaUrlOverrides().get(id);
     const mux = (await listMuxDevices().catch(() => [] as MuxDevice[])).find((d) => d.udid === id);
-    if (!mux && !url) throw new DeviceError("unknown_device", `iPhone ${id} is not attached`, "Plug it in and run `agentphone devices`.");
+    if (!mux && !url) throw new DeviceError("unknown_device", `iPhone ${id} is not attached`, "Plug it in and run `fonino devices`.");
     const name = mux ? await this.deviceName(mux) : `iPhone ${id.slice(-6)}`;
     // The client re-resolves the UDID on reconnect, so this object stays valid across replugs.
     const dev = new WdaIPhone(id, name, new WdaClient(id, mux, url));
