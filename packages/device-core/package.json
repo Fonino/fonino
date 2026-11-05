@@ -1,0 +1,1 @@
+{ "name": "@agentphone/device-core", "private": true, "type": "module", "exports": "./src/index.ts" }

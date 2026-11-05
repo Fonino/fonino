@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "fonino": {
+      "command": "node",
+      "args": ["packages/mcp-server/src/main.ts"]
+    }
+  }
+}

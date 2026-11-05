@@ -1,0 +1,43 @@
+{
+  "private": true,
+  "type": "module",
+  "name": "fonino",
+  "description": "Let your AI agent use your real iPhone, with your OK before anything is sent.",
+  "license": "MIT",
+  "homepage": "https://fonino.app",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/fonino/fonino"
+  },
+  "workspaces": [
+    "packages/*",
+    "apps/cli"
+  ],
+  "bin": {
+    "agentphone": "apps/cli/bin/agentphone"
+  },
+  "scripts": {
+    "build:native": "cd native/agentphone-macos && swift build -c release",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "agentphone": "node apps/cli/src/main.ts",
+    "mcp": "node packages/mcp-server/src/main.ts",
+    "test": "node --test 'tests/**/*.test.ts'"
+  },
+  "engines": {
+    "node": ">=22.18"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.128.0",
+    "@modelcontextprotocol/sdk": "^1.30.1",
+    "nodemailer": "^7.0.13",
+    "puppeteer-core": "^25.12.0",
+    "ws": "^8.22.0",
+    "zod": "^4.6.5"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.3",
+    "@types/nodemailer": "^8.0.2",
+    "@types/ws": "^8.18.1",
+    "typescript": "^7.0.2"
+  }
+}

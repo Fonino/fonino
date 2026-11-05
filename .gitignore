@@ -1,0 +1,8 @@
+node_modules/
+native/agentphone-macos/.build/
+vendor/
+runs/
+.env
+.env*.local
+apps/web/.next/
+.DS_Store
