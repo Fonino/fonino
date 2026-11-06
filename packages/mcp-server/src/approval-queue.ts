@@ -190,10 +190,6 @@ export class ApprovalQueue {
     writeFileSync(this.file(r.id), JSON.stringify(r, null, 2));
   }
 
-  /** The lease is gone, so approving can't do anything: close its open requests. */
-  expireForLease(leaseId: string) {
-    for (const r of this.list("pending")) if (r.leaseId === leaseId) this.save({ ...r, status: "expired", decidedAt: new Date().toISOString() });
-  }
 
   /** Pending requests older than ttlMs expire (nobody answered). */
   expireStale(ttlMs: number) {

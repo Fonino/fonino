@@ -218,23 +218,30 @@ test("an agent that leaves after a declined approval doesn't keep the phone", as
   await c.close();
 });
 
-test("releasing the phone closes its open approval; the next run gets a fresh one", async () => {
-  const c = await connect(keys.create("rerun").key);
+test("an approval outlives the phone release: the same assistant's next run picks up the owner's OK, another's doesn't", async () => {
+  const key = keys.create("rerun").key;
   const spec = { app: "Amazon", operation: "delete", recipient: "cart", payload: "1x cable", summary: "Delete cart item" };
-  const tap = async () => {
+  const tap = async (token: string) => {
+    const c = await connect(token);
     const lease = meta(await c.call("phone_acquire", { device_id: "mock-1", task: "t" })).lease_id;
     const scr = meta(await c.call("phone_get_screen", { device_id: "mock-1", lease_id: lease })).screen_id;
-    const r = meta(await c.call("phone_tap", { device_id: "mock-1", lease_id: lease, screen_id: scr, x: 50, y: 300, risk: "destructive", approval: spec }));
+    const r = await c.call("phone_tap", { device_id: "mock-1", lease_id: lease, screen_id: scr, x: 50, y: 300, risk: "destructive", approval: spec });
     await c.call("phone_release", { device_id: "mock-1", lease_id: lease });
+    await c.close();
     return r;
   };
-  const first = await tap();
+  const first = meta(await tap(key)); // short-turn agents (Grok Bot) ask, release and come back later
   assert.equal(first.code, "approval_pending");
-  assert.equal(core.approvals.get(first.approval_id)!.status, "expired");
-  const second = await tap();
-  assert.equal(second.code, "approval_pending");
-  assert.notEqual(second.approval_id, first.approval_id);
-  await c.close();
+  assert.equal(core.approvals.get(first.approval_id)!.status, "pending");
+  const again = meta(await tap(key)); // back before the owner answered: the same request, no second notification
+  assert.equal(again.approval_id, first.approval_id);
+  core.approvals.decide(first.approval_id, true);
+  const other = meta(await tap(keys.create("other").key));
+  assert.equal(other.code, "approval_pending"); // another assistant never inherits it
+  assert.notEqual(other.approval_id, first.approval_id);
+  const done = await tap(key);
+  assert.ok(!done.isError, JSON.stringify(done.content[0]));
+  assert.equal(core.approvals.get(first.approval_id)!.used, true);
 });
 
 test("OpenAI plugin review: every customer tool has explicit annotations and declares OAuth", async () => {

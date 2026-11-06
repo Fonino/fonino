@@ -664,7 +664,8 @@ export class RemoteAgentPhone {
     this.registry.leases!.release(ctx.key, leaseId);
     this.leases.delete(leaseId);
     this.live.revokeLease(leaseId);
-    this.approvals.expireForLease(leaseId); // a later run must get its own request (and notification)
+    // Pending approvals outlive the lease: agents that run in short turns (Grok Bot) raise one, release
+    // the phone and come back. The same key retrying the same action picks up the owner's decision.
     ctx.recorder.writeResult({ runId: ctx.recorder.runId, deviceId: ctx.device.id, holder: ctx.lease.holder, task: ctx.lease.task, outcome, releasedAt: new Date().toISOString() });
     this.log(`released ${ctx.device.id} (${ctx.lease.holder}): ${outcome}`);
   }
