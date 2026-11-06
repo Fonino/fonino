@@ -32,13 +32,20 @@ through connecting my phone. Stop and ask me whenever a step needs my hands, and
 my passcode or passwords for me.
 ```
 
-Or by hand:
+Or install it from npm:
+
+```bash
+npm install -g fonino
+fonino doctor        # checks the Mac, the phone and permissions
+fonino devices
+```
+
+Or from source:
 
 ```bash
 git clone https://github.com/fonino/fonino && cd fonino
 npm install && npm run build:native
-apps/cli/bin/fonino doctor        # checks the Mac, the phone and permissions
-apps/cli/bin/fonino devices
+apps/cli/bin/fonino doctor
 ```
 
 **Don't want to set it up yourself?** [Fonino for Mac](https://fonino.app) is the signed app

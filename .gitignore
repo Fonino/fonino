@@ -6,3 +6,4 @@ runs/
 .env*.local
 apps/web/.next/
 .DS_Store
+dist/

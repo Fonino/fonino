@@ -2,11 +2,15 @@
 //   goal.json  events.jsonl  screens/001.png ...  result.json
 
 import { appendFileSync, mkdirSync, writeFileSync } from "node:fs";
+import { homedir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 
 export function defaultRunsDir(): string {
-  return process.env.AGENTPHONE_RUNS_DIR ?? fileURLToPath(new URL("../../../runs", import.meta.url));
+  if (process.env.AGENTPHONE_RUNS_DIR) return process.env.AGENTPHONE_RUNS_DIR;
+  // A clone keeps runs/ in the repo; an npm install keeps them with the rest of the user's data.
+  if (import.meta.url.endsWith(".ts")) return fileURLToPath(new URL("../../../runs", import.meta.url));
+  return join(process.env.AGENTPHONE_HOME ?? join(homedir(), ".agentphone"), "runs");
 }
 
 export class RunRecorder {

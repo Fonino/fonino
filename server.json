@@ -1,0 +1,18 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.github.Fonino/fonino",
+  "title": "Fonino",
+  "description": "Let your AI agent use your real iPhone or Android phone, with your OK before anything is sent.",
+  "repository": { "url": "https://github.com/Fonino/fonino", "source": "github" },
+  "websiteUrl": "https://fonino.app",
+  "version": "0.1.0",
+  "packages": [
+    {
+      "registryType": "npm",
+      "identifier": "fonino",
+      "version": "0.1.0",
+      "transport": { "type": "stdio" },
+      "packageArguments": [{ "type": "positional", "value": "mcp" }]
+    }
+  ]
+}

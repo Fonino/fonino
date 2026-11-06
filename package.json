@@ -2,7 +2,7 @@
   "private": true,
   "type": "module",
   "name": "fonino",
-  "description": "Let your AI agent use your real iPhone, with your OK before anything is sent.",
+  "description": "Let your AI agent use your real iPhone or Android phone, with your OK before anything is sent.",
   "license": "MIT",
   "homepage": "https://fonino.app",
   "repository": {
@@ -22,7 +22,8 @@
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "fonino": "node apps/cli/src/main.ts",
     "mcp": "node packages/mcp-server/src/main.ts",
-    "test": "node --test 'tests/**/*.test.ts'"
+    "test": "node --test 'tests/**/*.test.ts'",
+    "build:npm": "sh scripts/build-npm.sh"
   },
   "engines": {
     "node": ">=22.18"

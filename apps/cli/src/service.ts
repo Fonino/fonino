@@ -28,7 +28,9 @@ const label = (s: ServiceName) => `dev.agentphone.${s}`;
 const plistPath = (s: ServiceName) => join(AGENTS, `${label(s)}.plist`);
 
 function programArgs(s: ServiceName, port: number): string[] {
-  const cli = [process.execPath, "--disable-warning=ExperimentalWarning", join(REPO, "apps/cli/src/main.ts")];
+  // From a clone: the TypeScript source. From npm: this bundled file is the CLI.
+  const entry = import.meta.url.endsWith(".ts") ? join(REPO, "apps/cli/src/main.ts") : fileURLToPath(import.meta.url);
+  const cli = [process.execPath, "--disable-warning=ExperimentalWarning", entry];
   if (s === "wda") return [...cli, "wda", "up"];
   if (s === "mcp") return [...cli, "mcp-http", "--port", String(port)];
   if (s === "resign") return [...cli, "wda", "resign", "--if-stale"];
