@@ -7,7 +7,9 @@ tap, swipe and type. Anything that sends, posts, buys or deletes waits for your 
 approval first. It runs on your Mac, with your own phone: no jailbreak, no cloud phone, nothing
 to install on an Android phone and only a small helper on an iPhone.
 
-<!-- TODO: demo GIF (an agent sends a text, the approval pops up, you tap Approve) -->
+<img src="docs/media/fonino-demo.gif" width="100%" alt="An agent asks Fonino to text Sam; the approval card waits for the owner; after Approve the phone sends the text in Google Messages">
+
+<sub>A real run, in real time, on an Android emulator with a demo number. The same tools and approvals work on iPhone.</sub>
 
 ```text
   ● agent: text Sam that I'm running late
