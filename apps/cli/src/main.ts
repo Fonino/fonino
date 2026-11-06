@@ -23,7 +23,7 @@ import {
 } from "@agentphone/agent-runtime";
 import type { PhoneDevice } from "@agentphone/device-core";
 import { createDefaultRegistry } from "@agentphone/iphone-adapter";
-import { DeviceError, type SpecialKey } from "@agentphone/shared";
+import { DeviceError, ruleLabel, type SpecialKey } from "@agentphone/shared";
 import { runDoctor } from "./doctor.ts";
 import { writeReplay } from "./replay.ts";
 
@@ -415,7 +415,7 @@ async function main() {
         }
         const rules = q.rules();
         if (!rules.length) return console.log("No always-allow rules.");
-        for (const r of rules) console.log(`${r.id}  ${r.kind.replace(/_/g, " ")} in ${r.app}  (${r.holder}, up to ${r.perDay}/day${r.used ? `, ${r.used.n} on ${r.used.day}` : ""})`);
+        for (const r of rules) console.log(`${r.id}  ${ruleLabel(r.kind)} in ${r.app}  (${r.holder}, up to ${r.perDay}/day${r.used ? `, ${r.used.n} on ${r.used.day}` : ""})`);
         return;
       }
       if (cmd === "approvals") {

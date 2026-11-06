@@ -42,8 +42,9 @@ export type Scope = NonNullable<ApprovalRecord["scope"]>;
 
 /**
  * Standing rule: the owner chose "Always allow" for one kind of action (e.g. LinkedIn connection
- * requests) by one assistant, in one app, on any phone. Only for sending/posting, never for spending
- * money, deleting or signing in, and capped per day so a runaway agent can't spam from the account.
+ * requests, or any other action the assistant named) by one assistant, in one app, on any phone. For
+ * sending, posting and deleting, never for spending money or signing in, and capped per day so a
+ * runaway agent can't spam from the account.
  */
 export type ApprovalRule = {
   id: string;

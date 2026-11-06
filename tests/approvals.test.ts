@@ -110,6 +110,31 @@ test("after a long approval wait, a changed screen blocks the stale tap", async 
   assert.equal(r.status, "success");
 });
 
+test("always allow works for any named action: accepting invites is its own kind, deleting can be a rule, money and sign-ins never", async () => {
+  const { ApprovalQueue } = await import("@agentphone/mcp-server");
+  const { ruleable, ruleLabel } = await import("@agentphone/shared");
+  const accept = ruleable("external_communication", { app: "LinkedIn (Emma Bennet)", operation: "accept_inbound_connection" })!;
+  assert.equal(accept.kind, "accept_invite");
+  assert.equal(ruleable("external_communication", { app: "LinkedIn", operation: "Accept invitation" })!.kind, "accept_invite");
+  assert.equal(ruleable("external_communication", { app: "LinkedIn", operation: "send_connection_request" })!.kind, "connection_request"); // sending isn't accepting
+  const archive = ruleable("destructive", { app: "Gmail", operation: "Archive_email!" })!;
+  assert.deepEqual(archive, { kind: "op:archive_email", label: "“archive email”" });
+  assert.equal(ruleLabel(archive.kind), archive.label);
+  assert.equal(ruleable("destructive", { app: "Messages", operation: "delete_message" })!.kind, "op:delete_message"); // not "messages"
+  assert.equal(ruleLabel("accept_invite"), "accepting invitations");
+  assert.equal(ruleable("authentication", { app: "Gmail", operation: "sign in" }), undefined);
+  assert.equal(ruleable("purchase", { app: "Amazon", operation: "reorder" }), undefined);
+  assert.equal(ruleable("external_communication", { app: "LinkedIn", operation: "  " }), undefined);
+
+  const q = new ApprovalQueue(join(mkdtempSync(join(tmpdir(), "agentphone-rules-")), "approvals"));
+  const who = { principal: "k1", holder: "grok-bot · Grok Bot" };
+  const spec = (to: string) => ({ app: "LinkedIn (Emma Bennet)", operation: "accept_inbound_connection", recipient: to, payload: "Accept", summary: "accept" });
+  const r = q.create({ deviceId: "iphone-003", leaseId: "l1", holder: who.holder, principal: who.principal, risk: "external_communication", spec: spec("Esmaeil") });
+  q.decide(r.id, true, "always");
+  assert.ok(q.useRule(who, "external_communication", spec("Someone else")));
+  assert.equal(q.useRule(who, "external_communication", { ...spec("X"), operation: "send_connection_request" }), undefined);
+});
+
 test("always allow: a standing rule covers the same kind of action in the same app for that assistant only, capped per day", async () => {
   const { ApprovalQueue } = await import("@agentphone/mcp-server");
   const { RULE_PER_DAY, ruleable } = await import("@agentphone/shared");

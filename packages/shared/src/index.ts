@@ -174,6 +174,7 @@ export const RULE_PER_DAY = 25;
 
 /** What a rule is about, from the operation the assistant declared. Order matters: most specific first. */
 const KINDS: Array<[string, string, RegExp]> = [
+  ["accept_invite", "accepting invitations", /\baccept\w*\b.*\b(invit|connect|request|friend|follow)/],
   ["connection_request", "connection requests", /connection[ _-]?request|\binvit|\bconnect\b/],
   ["follow", "follows", /\bfollow/],
   ["like", "likes and upvotes", /\blike\b|upvote|\breact/],
@@ -182,17 +183,31 @@ const KINDS: Array<[string, string, RegExp]> = [
   ["message", "messages", /message|\bdm\b|\btext\b|imessage|\bsms\b|email/],
 ];
 
-export function ruleKind(operation: string): { kind: string; label: string } | undefined {
+/**
+ * Known kinds group the many ways assistants name the same sending action; anything else (and any
+ * deletion: "delete message" is not "messages") is its own kind, named by the action itself.
+ */
+export function ruleKind(operation: string, known = true): { kind: string; label: string } | undefined {
   const op = operation.toLowerCase().replace(/_/g, " ");
-  const k = KINDS.find(([, , re]) => re.test(op));
-  return k ? { kind: k[0], label: k[1] } : undefined;
+  const k = known ? KINDS.find(([, , re]) => re.test(op)) : undefined;
+  if (k) return { kind: k[0], label: k[1] };
+  const words = op.replace(/[^\p{L}\p{N}]+/gu, " ").trim().split(" ").slice(0, 6).join(" ");
+  return words ? { kind: `op:${words.replace(/ /g, "_")}`, label: `“${words}”` } : undefined;
+}
+
+/** How to name a saved rule's kind ("connection requests", "“archive email”"). */
+export function ruleLabel(kind: string): string {
+  return KINDS.find(([k]) => k === kind)?.[1] ?? (kind.startsWith("op:") ? `“${kind.slice(3).replace(/_/g, " ")}”` : kind.replace(/_/g, " "));
 }
 
 /** "LinkedIn (Emma Bennet)" and "linkedin" are the same app. */
 export const appKey = (app: string) => app.replace(/\(.*?\)/g, "").trim().toLowerCase();
 
-/** Can this request become a standing rule? (The approval page only offers "Always allow" then.) */
+/**
+ * Can this request become a standing rule? (The approval page only offers "Always allow" then.)
+ * Any sending, posting or deleting can; spending money and signing in always ask.
+ */
 export function ruleable(risk: string, spec: { app: string; operation: string }): { kind: string; label: string } | undefined {
-  if (risk !== "external_communication" || !appKey(spec.app)) return undefined;
-  return ruleKind(spec.operation);
+  if ((risk !== "external_communication" && risk !== "destructive") || !appKey(spec.app)) return undefined;
+  return ruleKind(spec.operation, risk === "external_communication");
 }
