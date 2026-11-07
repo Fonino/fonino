@@ -1,0 +1,19 @@
+# Publishes server.json to the MCP Registry as io.github.Fonino/fonino. Run it by hand after
+# publishing the same version to npm. GitHub's OIDC token proves the run comes from this org.
+name: Publish to MCP Registry
+on: workflow_dispatch
+permissions:
+  id-token: write
+  contents: read
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install mcp-publisher
+        run: |
+          curl -fsSLO https://github.com/modelcontextprotocol/registry/releases/download/v1.8.8/mcp-publisher_linux_amd64.tar.gz
+          echo "$(curl -fsSL https://github.com/modelcontextprotocol/registry/releases/download/v1.8.8/registry_1.8.8_checksums.txt | grep ' mcp-publisher_linux_amd64.tar.gz$')" | sha256sum -c
+          tar xzf mcp-publisher_linux_amd64.tar.gz mcp-publisher
+      - run: ./mcp-publisher login github-oidc
+      - run: ./mcp-publisher publish
