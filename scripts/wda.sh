@@ -36,6 +36,10 @@ case "${1:-}" in
     DESTS=""
     for u in "$@"; do DESTS="$DESTS -destination id=$u"; done
     [ -n "$DESTS" ] || DESTS="-destination generic/platform=iOS"
+    # With a paid team's App Store Connect API key, Xcode needs no signed-in account and the profile
+    # lasts a year; without one it uses Xcode's account (free Apple IDs: 7 days).
+    AUTH=""
+    [ -n "${AGENTPHONE_ASC_KEY:-}" ] && AUTH="-authenticationKeyPath $AGENTPHONE_ASC_KEY -authenticationKeyID $AGENTPHONE_ASC_KEY_ID -authenticationKeyIssuerID $AGENTPHONE_ASC_ISSUER"
     # shellcheck disable=SC2086
     xcodebuild build-for-testing \
       -project "$WDA_DIR/WebDriverAgent.xcodeproj" \
@@ -44,6 +48,7 @@ case "${1:-}" in
       -derivedDataPath "$DERIVED" \
       -allowProvisioningUpdates \
       -allowProvisioningDeviceRegistration \
+      $AUTH \
       DEVELOPMENT_TEAM="$AGENTPHONE_TEAM_ID" \
       PRODUCT_BUNDLE_IDENTIFIER="$BUNDLE" \
       CODE_SIGN_STYLE=Automatic

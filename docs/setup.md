@@ -34,6 +34,11 @@ locked with Face ID ask for your Mac password, which AgentPhone will not enter.
 Signing: a free Apple ID ("Personal Team") works for testing but allows **3 devices** and its
 signing **expires after 7 days** (rerun step 4). A paid Apple Developer account ($99/yr) allows
 100 iPhones per membership year and 1‑year certificates, and can be shared by several Macs.
+With a paid account, add an App Store Connect API key (Users and Access → Integrations, role
+Developer or higher) to `~/.agentphone/setup.json` as
+`"ascKey": {"path": "/path/AuthKey_XXXX.p8", "id": "XXXX", "issuer": "<issuer id>"}`: the helper is
+then signed for a year without an Xcode sign-in, and `fonino wda resign --if-stale` only renews it
+near the end of that year instead of every few days.
 
 1. Install Xcode, open it once (install iOS components), accept the license, then
    `sudo xcode-select -s /Applications/Xcode.app/Contents/Developer` and sign in under

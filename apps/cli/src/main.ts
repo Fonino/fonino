@@ -2,7 +2,7 @@
 // agentphone CLI. Every command goes through device-core's registry, the same one
 // the MCP server and web bridge use.
 
-import { spawn } from "node:child_process";
+import { execFileSync, spawn } from "node:child_process";
 import { copyFileSync, existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { homedir } from "node:os";
 import { randomBytes } from "node:crypto";
@@ -268,7 +268,10 @@ async function main() {
     case "wda": {
       if (args[0] === "resign") {
         // Renew the helper's signature (free Apple IDs: 7 days) for every USB iPhone, then restart WDA.
-        const cfg = JSON.parse(readFileSync(join(process.env.AGENTPHONE_HOME ?? join(homedir(), ".agentphone"), "setup.json"), "utf8")) as { team?: string; bundle?: string };
+        const cfg = JSON.parse(readFileSync(join(process.env.AGENTPHONE_HOME ?? join(homedir(), ".agentphone"), "setup.json"), "utf8")) as {
+          team?: string; bundle?: string;
+          ascKey?: { path: string; id: string; issuer: string }; // paid team: App Store Connect API key, so profiles last a year
+        };
         if (!cfg.team) throw new DeviceError("not_configured", "No signing team recorded", "Run fonino setup first.");
         const { listMuxDevices } = await import("@agentphone/iphone-adapter");
         const connected = (await listMuxDevices()).filter((d) => d.connectionType === "USB").map((d) => d.udid);
@@ -276,13 +279,24 @@ async function main() {
         // back in after a while is renewed within the hour instead of waiting for the next fixed run.
         const stampFile = join(process.env.AGENTPHONE_HOME ?? join(homedir(), ".agentphone"), "resign.json");
         const stamps: Record<string, string> = existsSync(stampFile) ? JSON.parse(readFileSync(stampFile, "utf8")) : {};
-        const udids = flags["if-stale"] ? connected.filter((u) => !stamps[u] || Date.now() - Date.parse(stamps[u]) > 3 * 86_400_000) : connected;
+        // A paid team's profile lasts a year: then renew only in its last 3 days (or for a phone not
+        // installed since it was made). Unreadable profile: the 3-day rule.
+        const profile = helperProfile(process.env.AGENTPHONE_WDA_BUILD ?? join(fileURLToPath(new URL("../../..", import.meta.url)), "vendor/wda-build"));
+        const stale = (u: string) => {
+          if (!stamps[u]) return true;
+          if (profile) return profile.expires - Date.now() < 3 * 86_400_000 || Date.parse(stamps[u]) < profile.created;
+          return Date.now() - Date.parse(stamps[u]) > 3 * 86_400_000;
+        };
+        const udids = flags["if-stale"] ? connected.filter(stale) : connected;
         if (!udids.length) return ok(connected.length ? "all connected iPhones were renewed recently" : "no iPhone connected");
         const repo = fileURLToPath(new URL("../../..", import.meta.url));
         const code = await new Promise<number>((r) =>
           spawn("/bin/sh", [join(repo, "scripts/wda.sh"), "setup", ...udids], {
             stdio: "inherit",
-            env: { ...process.env, AGENTPHONE_TEAM_ID: cfg.team, AGENTPHONE_BUNDLE: cfg.bundle ?? `com.fonino.${cfg.team!.toLowerCase()}.helper` },
+            env: {
+              ...process.env, AGENTPHONE_TEAM_ID: cfg.team, AGENTPHONE_BUNDLE: cfg.bundle ?? `com.fonino.${cfg.team!.toLowerCase()}.helper`,
+              ...(cfg.ascKey ? { AGENTPHONE_ASC_KEY: cfg.ascKey.path, AGENTPHONE_ASC_KEY_ID: cfg.ascKey.id, AGENTPHONE_ASC_ISSUER: cfg.ascKey.issuer } : {}),
+            },
           }).on("exit", (c) => r(c ?? 1)),
         );
         if (code !== 0) throw new DeviceError("resign_failed", "Couldn't renew the helper's signature", "Open Xcode → Settings → Accounts and check your Apple ID is still signed in.");
@@ -770,6 +784,21 @@ async function agentCommand() {
 }
 
 // ---------------- runs ----------------
+
+// The helper's signing profile as last built: when it was made and when it expires (ms), or undefined.
+function helperProfile(buildDir: string): { created: number; expires: number } | undefined {
+  try {
+    const products = join(buildDir, "Build/Products/Debug-iphoneos");
+    const app = readdirSync(products).find((f) => f.endsWith("-Runner.app"));
+    if (!app) return undefined;
+    const plist = execFileSync("/usr/bin/security", ["cms", "-D", "-i", join(products, app, "embedded.mobileprovision")], { stdio: ["ignore", "pipe", "ignore"] }).toString();
+    const date = (key: string) => Date.parse(plist.match(new RegExp(`<key>${key}</key>\\s*<date>([^<]+)</date>`))?.[1] ?? "");
+    const created = date("CreationDate"), expires = date("ExpirationDate");
+    return Number.isFinite(created) && Number.isFinite(expires) ? { created, expires } : undefined;
+  } catch {
+    return undefined;
+  }
+}
 
 function listRuns(limit: number) {
   const dir = defaultRunsDir();
