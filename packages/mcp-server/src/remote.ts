@@ -138,6 +138,27 @@ const SETTLE_MS = 500; // first look after an action; then we wait until the scr
 const SETTLE_MAX_MS = 2500;
 const STABLE_DRIFT = 0.01; // two consecutive looks closer than this = the screen has settled
 
+/**
+ * Text before images, and the JSON text block (lease_id, screen_id…) also as structuredContent, the
+ * part ChatGPT apps hand the model, so ids survive clients that read that instead of the content.
+ */
+function forAssistants(r: ToolResult): ToolResult {
+  if (!Array.isArray(r.content) || !r.content.some((c) => c.type === "image")) return r;
+  const content = [...r.content.filter((c) => c.type !== "image"), ...r.content.filter((c) => c.type === "image")];
+  const out: ToolResult & { structuredContent?: Record<string, unknown> } = { ...r, content };
+  if (!("structuredContent" in r)) {
+    for (const c of content) {
+      if (c.type !== "text") continue;
+      try {
+        const v = JSON.parse((c as { text: string }).text.split("\nDo NOT")[0]);
+        if (v && typeof v === "object" && !Array.isArray(v)) out.structuredContent = v;
+      } catch { /* not JSON */ }
+      break;
+    }
+  }
+  return out;
+}
+
 /** Screenshot for the model: JPEG (~6x smaller than PNG, so each step reaches the model faster). */
 async function modelImage(pngPath: string): Promise<{ type: "image"; data: string; mimeType: string }> {
   const out = pathJoin(tmpdir(), `fonino-${process.pid}-${randomUUID().slice(0, 8)}.jpg`);
@@ -865,7 +886,7 @@ export class RemoteAgentPhone {
           ms: Date.now() - t0,
           heldMs: heldSince && !result.isError ? Date.now() - Date.parse(heldSince) : undefined,
         });
-        return result;
+        return forAssistants(result);
       };
       const c = { ...(config as { _meta?: Record<string, unknown> }), ...(extra ?? {}) };
       c._meta = { ...(c._meta ?? {}), securitySchemes: SECURITY };
